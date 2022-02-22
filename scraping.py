@@ -19,7 +19,9 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        #I am not sure if this should match up with the dictionary title in deliverable 1.
+        "hemispheres_image": hemispheres_image(browser)
     }
 
     # Stop webdriver and return data
@@ -97,6 +99,48 @@ def mars_facts():
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
 
+def hemispheres_image(browser):
+    # 1. Use browser to visit the URL
+    url = 'https://marshemispheres.com/'
+
+    browser.visit(url)
+    #need browser and HTML parser for next step
+    html = browser.html
+    image_soup = soup(html, 'html.parser')
+    #identify the number of images that I need in my For loop
+    # inspecting website seems all relevant code is div class "item" - has both description as h3 and image as href (but only last part of image URL not full)
+    count_items= image_soup.find_all('div', class_='item',)
+    
+    # 2. Create a list to hold the images and titles relates to #5
+    hemisphere_image_urls = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+
+    #For loop to iterate through the tags or CSS element-relates to the loop portion of #7
+
+    for count in count_items:
+        # find title
+        title = count.find('h3').text
+    
+        #find url
+        second_url=count.find('a')['href']
+        complete_url = url+second_url
+    
+        #click on each hemisphere link and navigate to the full resolution image page-- relates to the find image anchor and get href portion of number 7
+        browser.visit(complete_url)
+        html = browser.html
+        image_soup = soup(html, 'html.parser')
+   
+        #retrieve the full resolution image URL string and title for the hemisphere image--relates to #6  retrivce image
+        hemisphere_first_image= image_soup.find('div', class_='downloads')
+        hemisphere_full_image= url+hemisphere_first_image.find('a')['href']
+
+        #add selection to the list
+        item_to_add=dict({'img_url':hemisphere_full_image, 'title':title})
+        hemisphere_image_urls.append(item_to_add)
+        
+    return hemisphere_image_urls
+        
 if __name__ == "__main__":
 
     # If running as script, print scraped data
